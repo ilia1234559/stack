@@ -23,7 +23,7 @@ double inp()
 	{
 		s[i] = _getch();
 		if (s[i] == 13) break;
-		if (s[i] >= '0' && s[i] <= 9)
+		if (!(s[i] >= '0' && s[i] <= '9'))
 		{
 			continue;
 		}
@@ -103,31 +103,26 @@ Stack* push(Stack* top, Stack* bot, int kol, char pos)
 }
 
 
-void show(Stack* topS, Stack* botS, char pos)
+void show(Stack* topS, Stack* botS)
 {
 	Stack* element = NULL;
-	if (pos == '1')
+	cout << "queue" << endl;
+	element = botS;
+	int count = 1;
+	while (element != NULL)
 	{
-		element = botS;
-		int count = 1;
-		while (element != NULL)
-		{
-			cout << count << ")" << " " << element->info << endl;
-			element = element->next;
-			count++;
-		}
+		cout << count << ")" << " " << element->info << endl;
+		element = element->next;
+		count++;
 	}
-
-	if (pos == '2')
+	element = topS;
+	cout << "stack" << endl;
+	count = 1;
+	while (element != NULL)
 	{
-		element = topS;
-		int count = 1;
-		while (element != NULL)
-		{
-			cout << count << ")" << " " << element->info << endl;
-			element = element->prev;
-			count++;
-		}
+		cout << count << ")" << " " << element->info << endl;
+		element = element->prev;
+		count++;
 	}
 }
 
@@ -173,35 +168,65 @@ Stack* deleteStack(Stack* topD)
 }*/
 
 
-void task(Stack* topT)
+Stack* task(Stack* topT, Stack* botT)
 {
-	Stack* buf;
-	Stack* newEl = new Stack;
-	buf = newEl;
-	newEl->info = '123';
-	newEl->next = topT;
-	newEl->prev = NULL;
-	newEl->next = topT;
-	topT = newEl->next;
-	while (topT != NULL)
+	Stack* elem = topT;
+	if (fmod(elem->info, 10) == 5)
 	{
-		
-		if (fmod(topT->info, 10) == 5)
+		Stack* buf = elem;
+		elem = elem->prev;
+		delete buf;
+		elem->next = NULL;
+	}
+	else
+	{
+		elem = elem->prev;
+	}
+
+	if (elem->next == NULL)
+	{
+		elem = elem->prev;
+	}
+
+	while (elem != botT)
+	{
+		if (fmod(elem->info, 10) == 5)
 		{
-			cout << "1";
-			newEl->next = topT->next;
-			delete topT;
-			topT = newEl->next;
+			elem->next->prev = elem->prev;
+			Stack* buf = elem;
+			elem = elem->prev;
+			elem->next = buf->next;
+			delete buf;
 		}
 		else
 		{
-			cout << "2";
-			newEl = topT;
-			topT = topT->next;
+			elem = elem->prev;
 		}
 	}
-	newEl = buf;
-	delete newEl;
+	if (fmod(elem->info, 10) == 5)
+	{
+		botT = elem->next;
+		botT->prev = NULL;
+		delete elem;
+		elem = botT;
+	}
+	else
+	{
+		botT = elem;
+	}
+	return botT;
+}
+
+Stack* topSearch(Stack* bot)
+{
+	if (bot != NULL)
+	{
+		while (bot->next != NULL)
+		{
+			bot = bot->next;
+		}
+	}
+	return bot;
 }
 
 int main()
@@ -210,6 +235,7 @@ int main()
 
 	Stack* top = NULL;
 	Stack* bot = NULL;
+
 	while (1)
 	{
 		cout << "\n1. create new list or add new elements." << endl;
@@ -230,16 +256,15 @@ int main()
 				} while (kol < 2);
 				top = PushNewList(kol);
 				bot = botSearch(top);
-				cout << bot->info;
-				cout << top->info;
-				system("pause");
 			}
 			else
 			{
 				cout << "how many elements you want to add?" << endl;
 				kol = inp();
+
 				while (1)
 				{
+					cout << "1 - enter at top\n2 - enter at bot\n";
 					char pos = _getch();
 					if (pos == '1')
 					{
@@ -264,38 +289,32 @@ int main()
 
 			if (top != NULL)
 			{
-				cout << "Press 1 - Show from the beginng of the list" << endl
-					<< "Press 2 - Show from the end of the list" << endl;
-				while (1)
-				{
-					char pos = _getch();
-					if (pos == '1')
-					{
-						show(top, bot, pos);
-						break;
-					}
-					else if (pos == '2')
-					{
-						show(top, bot, pos);
-						break;
-					}
-					else
-					{
-						cout << "select 1 or 2!!";
-					}
-				}
+				show(top, bot);
+				break;
+				show(top, bot);
+				break;
 			}
-			else cout << "\nno elements in list!!!\n";
+			else
+			{
+				cout << "\nno elements in list!!!\n";
+			}
 			break;
 		case '3':
-			cout << "!";
-			if (top == NULL && bot == NULL)
+			if (top == NULL || bot == NULL)
 			{
-				task(top);
+				cout << "\nno elements in list!!!\n";
+			}
+			else
+			{
+				bot = task(top, bot);
+				top = topSearch(bot);
 			}
 			break;
-		case '4':return 0; break;
+		case '4':
+			top = deleteStack(top);
+			return 0;
+			break;
 		}
 	}
-	return 0;
 }
+
